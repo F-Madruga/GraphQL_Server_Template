@@ -1,0 +1,58 @@
+version: "3.7"
+
+services:
+  database:
+    image: postgres:13.2-alpine
+    container_name: khyber_database
+    environment:
+      - POSTGRES_DB=khyber
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - khyber_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:6.2.1-alpine
+    container_name: khyber_redis
+    networks:
+      - khyber_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  server:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    image: khyber_server
+    container_name: khyber_server
+    networks:
+      - khyber_network
+    stdin_open: true
+    tty: true
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=dev
+      - LOG_LEVEL=debug
+      - DATABASE_URL=postgresql://postgres:postgres@khyber_database:5432/khyber
+      - SERVER_PORT=8080
+      - REDIS_URL=redis://khyber_redis
+      - COOKIE_NAME=qid
+      - FORGET_PASSWORD_PREFIX="forget-password:"
+      - SESSION_SECRET=qowiueojwojfalksdjoqiwueo
+    ports:
+      - "8011:8080"
+
+networks:
+  khyber_network:

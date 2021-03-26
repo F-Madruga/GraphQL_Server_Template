@@ -1,0 +1,11 @@
+# Compiled code
+dist
+
+# Dependecies
+node_modules
+
+# Enviroment variables
+.env
+
+# Coverage files
+coverage
