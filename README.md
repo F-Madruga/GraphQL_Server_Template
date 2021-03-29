@@ -5,7 +5,7 @@
 ## Requirements
 * Node
 * Redis
-* postgreSQL
+* PostgreSQL
 
 **Optional**
 * Docker
